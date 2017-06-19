@@ -45,9 +45,12 @@ angular.module('copayApp.services').factory('correspondentListService', function
 		});
 	}
 	
-	function addMessageEvent(bIncoming, peer_address, body, message_counter){
-		if (!root.messageEventsByCorrespondent[peer_address])
-			root.messageEventsByCorrespondent[peer_address] = [];
+	function addMessageEvent(bIncoming, peer_address, body, message_counter, skip_history_load){
+		if (!root.messageEventsByCorrespondent[peer_address] && !skip_history_load) {
+			return loadMoreHistory({device_address: peer_address}, function() {
+				addMessageEvent(bIncoming, peer_address, body, message_counter, true);
+			});
+		}
 		//root.messageEventsByCorrespondent[peer_address].push({bIncoming: true, message: $sce.trustAsHtml(body)});
 		if (bIncoming) {
 			if (peer_address in $rootScope.newMessagesCount)
@@ -515,6 +518,7 @@ angular.module('copayApp.services').factory('correspondentListService', function
 	root.checkAndInsertDate = checkAndInsertDate;
 	root.parseMessage = parseMessage;
 	root.escapeHtmlAndInsertBr = escapeHtmlAndInsertBr;
+	root.addMessageEvent = addMessageEvent;
 	
 	root.list = function(cb) {
 	  device.readCorrespondents(function(arrCorrespondents){
