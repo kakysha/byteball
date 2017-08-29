@@ -105,7 +105,7 @@ angular.module('copayApp.services').factory('correspondentListService', function
 		//	if (arrMyAddresses.indexOf(address) >= 0)
 		//		return address;
 			//return '<a send-payment address="'+address+'">'+address+'</a>';
-			return '<a dropdown-toggle="#pop'+address+'">'+address+'</a><ul id="pop'+address+'" class="f-dropdown drop-to4p drop-4up" style="left:0px" data-dropdown-content><li><a ng-click="sendPayment(\''+address+'\')">'+gettext('Pay to this address')+'</a></li><li><a ng-click="offerContract(\''+address+'\')">'+gettext('Offer a contract')+'</a></li></ul>';
+			return '<a dropdown-toggle="#pop'+address+'">'+address+'</a><ul id="pop'+address+'" class="f-dropdown" style="left:0px" data-dropdown-content><li><a ng-click="sendPayment(\''+address+'\')">'+gettext('Pay to this address')+'</a></li><li><a ng-click="offerContract(\''+address+'\')">'+gettext('Offer a contract')+'</a></li></ul>';
 		//	return '<a ng-click="sendPayment(\''+address+'\')">'+address+'</a>';
 			//return '<a send-payment ng-click="sendPayment(\''+address+'\')">'+address+'</a>';
 			//return '<a send-payment ng-click="console.log(\''+address+'\')">'+address+'</a>';
@@ -476,9 +476,10 @@ angular.module('copayApp.services').factory('correspondentListService', function
 		});
 	});
 	
-	eventBus.on("sent_payment", function(peer_address, amount, asset){
+	eventBus.on("sent_payment", function(peer_address, amount, asset, bToSharedAddress){
+		var title = bToSharedAddress ? 'Payment to smart address' : 'Payment';
 		setCurrentCorrespondent(peer_address, function(bAnotherCorrespondent){
-			var body = '<a ng-click="showPayment(\''+asset+'\')" class="payment">Payment: '+getAmountText(amount, asset)+'</a>';
+			var body = '<a ng-click="showPayment(\''+asset+'\')" class="payment">'+title+': '+getAmountText(amount, asset)+'</a>';
 			addMessageEvent(false, peer_address, body);
 			device.readCorrespondent(peer_address, function(correspondent){
 				if (correspondent.my_record_pref && correspondent.peer_record_pref) chatStorage.store(peer_address, body, 0, 'html');
@@ -487,8 +488,9 @@ angular.module('copayApp.services').factory('correspondentListService', function
 		});
 	});
 	
-	eventBus.on("received_payment", function(peer_address, amount, asset, message_counter){
-		var body = '<a ng-click="showPayment(\''+asset+'\')" class="payment">Payment: '+getAmountText(amount, asset)+'</a>';
+	eventBus.on("received_payment", function(peer_address, amount, asset, message_counter, bToSharedAddress){
+		var title = bToSharedAddress ? 'Payment to smart address' : 'Payment';
+		var body = '<a ng-click="showPayment(\''+asset+'\')" class="payment">'+title+': '+getAmountText(amount, asset)+'</a>';
 		addMessageEvent(true, peer_address, body, message_counter);
 		device.readCorrespondent(peer_address, function(correspondent){
 			if (correspondent.my_record_pref && correspondent.peer_record_pref) chatStorage.store(peer_address, body, 1, 'html');
