@@ -175,7 +175,7 @@ angular.module('copayApp.controllers').controller('correspondentDeviceController
 			$scope.bWorking = false;
 			$scope.arrRelations = ["=", ">", "<", ">=", "<=", "!="];
 			$scope.arrParties = [{value: 'me', display_value: "I"}, {value: 'peer', display_value: "the peer"}];
-			$scope.arrPeerPaysTos = [{value: 'me', display_value: "me"}, {value: 'contract', display_value: "this contract"}];
+			$scope.arrPeerPaysTos = [{value: 'me', display_value: "to me"}, {value: 'contract', display_value: "to this contract"}];
 			$scope.arrAssetInfos = indexScope.arrBalances.map(function(b){
 				var info = {asset: b.asset, is_private: b.is_private};
 				if (b.asset === 'base')
@@ -492,9 +492,13 @@ angular.module('copayApp.controllers').controller('correspondentDeviceController
 							$scope.arrHumanReadableDefinitions = [];
 							for (var destinationAddress in objMultiPaymentRequest.definitions){
 								var arrDefinition = objMultiPaymentRequest.definitions[destinationAddress].definition;
+								var assocSignersByPath = objMultiPaymentRequest.definitions[destinationAddress].signers;
+								var arrPeerAddresses = walletDefinedByAddresses.getPeerAddressesFromSigners(assocSignersByPath);
+								if (lodash.difference(arrPeerAddresses, arrAllMemberAddresses).length !== 0)
+									throw Error("inconsistent peer addresses");
 								$scope.arrHumanReadableDefinitions.push({
 									destinationAddress: destinationAddress,
-									humanReadableDefinition: correspondentListService.getHumanReadableDefinition(arrDefinition, arrMyAddresses, [])
+									humanReadableDefinition: correspondentListService.getHumanReadableDefinition(arrDefinition, arrMyAddresses, [], arrPeerAddresses)
 								});
 							}
 							cb();
